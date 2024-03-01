@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <link rel="stylesheet" href="css/sample.css">
+    <title>ジャーナリングアプリ</title>
+    <style>
+        body {
+            background-image: url(img/background.png);
+            font-family:Georgia, 'Times New Roman', Times, serif
+            }
+        </style>
+
+</head>
+
+<body>
+    <header>
+        <h1><i>Journaling Diary</i></h1>
+    </header>
+
+    <main>
+        <button id="save2">SAVE</button>
+        <button id="clear">CLEAR</button>
+        <!-- <button id="load">読み込み</button> -->
+
+        <div class="daiary_area">
+            
+            <div class="daiary">
+                <h2>Diary</h2>
+            </div>
+            <!-- 日付を入れる -->
+            <label for="datepicker">select the date:</label>
+            <input type="date" id="datepicker">
+            <!-- <div id ="date">
+                <select id="date_year"></select>
+                <select id="date_month"></select>
+                <select id="date_day"></select>
+            </div>
+             -->
+            <textarea id="diary"> </textarea>
+        </div>
+
+        <div class="emotion_area">
+            <h2>How are you feeling?</h2>
+            <p>自分の気持ちに近いものをクリックしてください。3つまで選択できます</p>
+                
+                <h3>selected emotion</h3><br>
+                <button id="save3">SAVE</button>
+                <button id="clear2">CLEAR</button>
+                <div class ="emotion_picks">
+                    <div class="selected_emotions_container" id="selected_emotions1"><span id="em1">感情1</span></div>
+                    <div class="selected_emotions_container" id="selected_emotions2"><span id="em2">感情2</span></div>
+                    <div class="selected_emotions_container" id="selected_emotions3"><span id="em3">感情3</span></div>
+                    <!-- ここに選択された感情を表示 -->
+                 </div>
+            
+            <div class="emotion2">
+            <ul class="orange">
+                <li class="emotion" id="satisfaction" onclick="selectEmotion('satisfaction')">満足</li>
+                <li class="emotion" id="thankyou" onclick="selectEmotion('thankyou')">感謝</li>
+                <li class="emotion" id="happy" onclick="selectEmotion('happy')">嬉しい</li>
+                <li class="emotion" id="wakuwaku" onclick="selectEmotion('wakuwaku')">ワクワク</li>
+            </ul>
+            <ul class="yellow">
+                <li class="emotion" id="like" onclick="selectEmotion('like')">好き</li>
+                <li class="emotion" id="impressed" onclick="selectEmotion('impressed')">感心</li>
+                <li class="emotion" id="fun" onclick="selectEmotion('fun')">面白い</li>
+                <li class="emotion" id="joy" onclick="selectEmotion('joy')">楽しい</li>
+
+            </ul>
+            <ul class="yellow-green">
+                <li class="emotion" id="sukkiri" onclick="selectEmotion('sukkiri')">すっきり</li>
+                <li class="emotion" id="dokidoki" onclick="selectEmotion('dokidoki')">ドキドキ</li>
+                <li class="emotion" id="peace" onclick="selectEmotion('peace')">安心</li>
+                <li class="emotion" id="calm" onclick="selectEmotion('calm')">穏やか</li>
+            </ul>    
+            <ul class="thin-green">
+                <li class="emotion" id="usually" onclick="selectEmotion('usually')">普通</li>
+                <li class="emotion" id="bore" onclick="selectEmotion('bore')">退屈</li>
+                <li class="emotion" id="moyamoya" onclick="selectEmotion('moyamoya')">もやもや</li>
+                <li class="emotion" id="tension" onclick="selectEmotion('tension')">緊張</li>
+            </ul>    
+            <ul class="green">
+                <li class="emotion" id="anxiety" onclick="selectEmotion('anxiety')">不安</li>
+                <li class="emotion" id="sad" onclick="selectEmotion('sad')">悲しい</li>
+                <li class="emotion" id="tired" onclick="selectEmotion('tired')">疲れた</li>
+                <li class="emotion" id="iraira" onclick="selectEmotion('iraira')">イライラ</li>
+            </ul>    
+            </div>
+        </div>
+
+        <div class="question_area">
+            <div class="todayQuestion">
+                <h2>Questions about you</h2>
+                <button id="question">select questions<br>他の問いも見る</button>
+            </div>
+            <div id="select_question">Question：</div>
+            <textarea id="answer"><span id="userInput"></span></textarea>
+            <button id="save">SAVE</button>
+            <button id="answerClear">CLEAR</button><br>
+            <button id="allAnswers">See previous answers<br>これまでの回答をみる</button>
+            <textarea id="pages"></textarea>
+        </div>
+        <!-- <div class="picture_area">
+            <h2>画像</h2> -->
+
+        </div>
+        
+
+        </div>
+
+    </main>
+    <footer><small>G's</small></footer>
+
+    <script>
+// 今日の日付を取得できるnew Dateを格納
+document.addEventListener('DOMContentLoaded', function() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const date = String(today.getDate()).padStart(2, '0');
+  const todayString = `${year}-${month}-${date}`;
+  document.getElementById('datepicker').value = todayString;
+});
+
+// 問いと回答の定義
+const questionsAndAnswers = [
+     { question: "人生で最もワクワクした時はどんな時ですか？またそれはなぜですか？", answer: "人生で最もワクワクした時はどんな時ですか？またそれはなぜですか？" },
+     { question: "今後の人生において、何がなんでもやりたいことは何ですか？", answer: "今後の人生において、何がなんでもやりたいことは何ですか？" },
+     { question: "あなたがとても長く没頭できることは何ですか？", answer: "あなたがとても長く没頭できることは何ですか？" },
+     { question: "最近感動したことは何ですか？", answer: "最近感動したことは何ですか？" },
+     { question: "最後に心揺さぶられたことは何ですか？", answer: "最後に心揺さぶられたことは何ですか？" },
+     { question: "あなたはストレスがかかったとき、どんな行動をしますか？", answer: "あなたはストレスがかかったとき、どんな行動をしますか？" },
+     { question: "自分の心が温まるときはどんな時ですか？", answer: "自分の心が温まるときはどんな時ですか？"},
+     { question: "あなたが決断するときに大事にしていることは何ですか？", answer: "あなたが決断するときに大事にしていることは何ですか？" },
+     { question: "あなたが魅力に感じる人はどんな人ですか？", answer: "あなたが魅力に感じる人はどんな人ですか？" },
+     { question: "今、あなたの前に「どこでもドア」が現れました。どこに行きたいですか？", answer: "今、あなたの前に「どこでもドア」が現れました。どこに行きたいですか？" },
+];
+// 最初のページで問いを出しておく
+document.addEventListener('DOMContentLoaded', function() {
+    // ページ読み込み時にランダムな問いを選択して表示する
+    const r = Math.floor(Math.random() * questionsAndAnswers.length); // 問いの数に合わせて修正
+    const selectedQuestion = questionsAndAnswers[r].question;
+    const selectedAnswer = questionsAndAnswers[r].answer;
+    $("#select_question").text(selectedQuestion); // ランダムな問いを表示
+    $("#answer").val(selectedAnswer); // 対応する回答を表示
+});
+
+
+// ランダムの問いを出す
+$("#question").on("click", function() {
+    const r = Math.floor(Math.random() * 10); // 0から9までのランダムな整数を生成⇒これだと1～10 const r = Math.ceil(Math.random() * 10);
+    const selectedQuestion = questionsAndAnswers[r].question; // ランダムに選択された問い
+    const selectedAnswer = questionsAndAnswers[r].answer; // 選択された問いに対応する回答
+    $("#select_question").text(selectedQuestion); // 問いを表示
+
+    // もし"answer"に何か文字が入っていたら、それを消す
+    if ($("#answer").val().trim() !== "") {
+        $("#answer").val(""); // テキストエリアの内容を消去    
+    }
+    $("#answer").val(selectedAnswer); // 回答を表示
+});
+
+
+// 保存する機能
+// クリックイベント
+    $("#save2").on("click", function () {
+        const date =$("#datepicker").val();
+        const a =$("#diary").val();  
+        localStorage.setItem(date, a);
+        alert("保存しました");
+        saveData();
+    });
+
+ // 削除するとき
+$("#clear").on("click", function () {
+    const date = $("#datepicker").val();
+    alert("削除しました");
+    localStorage.removeItem(date);
+    $("#diary").val("");
+});
+
+// 日記を日付で読み込む機能
+$("#datepicker").on("change", function () {
+    const date = $("#datepicker").val(); // 日付の取得
+    const diary = localStorage.getItem(date); // 日付をキーにして日記を取得
+    if (diary) {
+        $("#diary").val(diary); // 取得した日記を表示
+        alert("読み込みました");
+    } else {
+        $("#diary").val('');
+    }
+});
+
+// [問いの答え]ゾーン
+// 問いの答えは「SAVE」が押されたら保存する
+$("#save").on("click", function() {
+    saveAnswers();
+    alert("保存しました");
+});
+
+ // 問いの答えを削除するとき
+ $("#answerClear").on("click", function () {
+    alert("削除しました");
+    localStorage.removeItem("answers");
+    $("#answer").val("");
+    $("#pages").val("");
+});
+
+// 保存する関数
+function saveAnswers() {
+    const newAnswer = $("#answer").val(); // 新しい答えの取得
+    let answers = localStorage.getItem("answers"); // 保存されたすべての答えを取得
+    if (answers) {
+        answers += "\n" + "========================" +"\n" +newAnswer; // 既存の答えに新しい答えを追加
+    } else {
+        answers = newAnswer; // まだ保存された答えがない場合は新しい答えをセット
+    }
+    localStorage.setItem("answers", answers); // 更新された答えをローカルストレージに保存
+}
+
+// 保存されたデータを読み込む関数
+$("#allAnswers").on("click",function(){
+    const answers = localStorage.getItem("answers"); // ローカルストレージからデータを取得
+    if (answers) {
+        $("#pages").val(answers); // テキストエリアに反映
+        // console.log("保存された問いの答えを読み込みました");
+    }
+})
+
+
+// "#save3" ボタンをクリックしたときの処理
+$("#save3").on("click", function () {
+    // 日付を取得
+    const date = $("#datepicker").val();
+    const em1 = $("#selected_emotions1 span").text(); // 選択された感情のテキストを取得する
+    localStorage.setItem(date + "_emotion1", em1);
+    console.log($("#selected_emotions1 span"));
+});
+
+
+     
+    // // 選択された感情をsaveする
+    // saveSelectedEmotions1(date);
+    // saveSelectedEmotions2(date);
+    // saveSelectedEmotions3(date);
+// });
+
+
+// 選択された感情を格納する配列
+var selectedEmotions = [[], [], []];
+
+// 感情が選択されたときの処理
+function selectEmotion(emotionId) {
+    // 選択された感情がすでに選択されているかを確認
+    var alreadySelected = false;
+    for (var i = 0; i < 3; i++) {
+        if (selectedEmotions[i].includes(emotionId)) {
+            alreadySelected = true;
+            var index = selectedEmotions[i].indexOf(emotionId);
+            selectedEmotions[i].splice(index, 1); // 選択を解除
+            document.getElementById(emotionId).classList.remove("selected");
+            break;
+        }
+    }
+
+    // すでに選択されていない場合、新たに選択
+    if (!alreadySelected) {
+        for (var i = 0; i < 3; i++) {
+            if (selectedEmotions[i].length < 1) { 
+                selectedEmotions[i].push(emotionId);
+                document.getElementById(emotionId).classList.add("selected");
+                break;
+            }
+        }
+    }
+
+    // 選択された感情を表示する
+    displaySelectedEmotions1();
+    displaySelectedEmotions2();
+    displaySelectedEmotions3();
+
+}
+
+// 選択された感情を表示する
+function displaySelectedEmotions1() {
+    var selectedEmotionsContainer = document.getElementById("selected_emotions1");
+    if (selectedEmotionsContainer) {
+        selectedEmotionsContainer.innerHTML = "";
+        selectedEmotions[0].forEach(function(emotionId) {
+            var emotionName = document.getElementById(emotionId).textContent;
+            var emotionElement = document.createElement("div");
+            emotionElement.textContent = emotionName;
+            selectedEmotionsContainer.appendChild(emotionElement);
+        });
+    }
+}
+// 選択された感情を表示する（selected_emotions2）
+function displaySelectedEmotions2() {
+    var selectedEmotionsContainer = document.getElementById("selected_emotions2");
+    if (selectedEmotionsContainer) {
+        selectedEmotionsContainer.innerHTML = "";
+        selectedEmotions[1].forEach(function(emotionId) {
+            var emotionName = document.getElementById(emotionId).textContent;
+            var emotionElement = document.createElement("div");
+            emotionElement.textContent = emotionName;
+            selectedEmotionsContainer.appendChild(emotionElement);
+        });
+    }
+}
+
+
+// 選択された感情を表示する（selected_emotions3）
+function displaySelectedEmotions3() {
+    var selectedEmotionsContainer = document.getElementById("selected_emotions3");
+    if (selectedEmotionsContainer) {
+        selectedEmotionsContainer.innerHTML = "";
+        selectedEmotions[2].forEach(function(emotionId) {
+            var emotionName = document.getElementById(emotionId).textContent;
+            var emotionElement = document.createElement("div");
+            emotionElement.textContent = emotionName;
+            selectedEmotionsContainer.appendChild(emotionElement);
+        });
+    }
+}
+
+ // 感情を削除するとき
+ $("#clear2").on("click", function () {
+    localStorage.removeItem("selected");
+    selectedEmotions = [[], [], []]; // 選択された感情の配列を空にする
+    $("#selected_emotions1").html("");
+    $("#selected_emotions2").html("");
+    $("#selected_emotions3").html("");
+});
+
+    </script>
+</body>
+
+</html>
